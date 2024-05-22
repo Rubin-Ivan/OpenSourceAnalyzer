@@ -22,3 +22,5 @@ Recent pushed Last Six Months -	Изменения в репозитории м�
 Test folder -	Наличие test
 
 Tutorials folder -	Наличие tutorials
+
+Community score - Наличие файлов: code_of_conduct, contributing, issue_template, pull_request_template
