@@ -1,3 +1,17 @@
+## Общая информация
+
+Contributors Count - количество contributors
+
+Contributions Count - количество contributions
+
+Created At - репозиторий создан
+
+Last Commit - последний коммит
+
+Py Files Count - количество файлов py
+
+Total code Lines Count - количество строк кода в файлах py
+
 ## Критерии:
 Basic Info Present - Наличие базовой информации (description, homepage, topics)
 
