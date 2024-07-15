@@ -1,0 +1,15 @@
+https://github.com/postgres/postgres
+https://github.com/apache/hadoop
+https://github.com/tarantool/tarantool
+https://github.com/sb-ai-lab/LightAutoML
+https://github.com/apache/spark
+https://github.com/ClickHouse/ClickHouse
+https://github.com/Tinkoff/data-detective
+https://github.com/metabase/metabase
+https://github.com/apache/superset
+https://github.com/greenplum-db/gpdb-archive
+https://github.com/ytsaurus/ytsaurus
+https://github.com/yandex/gixy
+https://github.com/yandex/YaLM-100B
+https://github.com/yandex/odyssey
+https://github.com/yandex/yandex-tank
