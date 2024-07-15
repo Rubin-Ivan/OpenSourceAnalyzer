@@ -13,7 +13,7 @@ class GitHubRepositoryAnalyzer:
         self.owner = owner
         self.repo = repo
         self.headers = {
-            'Authorization': f'token {"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"}',
+            'Authorization': f'token {"TOKEN"}',
             'Accept': 'application/vnd.github.v3+json',
         }
 
