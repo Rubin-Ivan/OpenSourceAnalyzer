@@ -8,10 +8,14 @@ from io import BytesIO
 
 
 class GitHubRepositoryAnalyzer:
-    
+
     def __init__(self, owner, repo):
         self.owner = owner
         self.repo = repo
+        self.headers = {
+            'Authorization': f'token {"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"}',
+            'Accept': 'application/vnd.github.v3+json',
+        }
 
     def basic_info_present(self, repository_data):
         score = 0
@@ -32,7 +36,12 @@ class GitHubRepositoryAnalyzer:
 
 
         return int(creation_date < six_months_ago), creation_date
-    
+
+
+    def stars_clear(self, repository_data):
+        return repository_data.get('stargazers_count', 0)
+
+
     def stars(self, repository_data):
         stargazers_count = repository_data.get('stargazers_count', 0)
         if stargazers_count > 0:
@@ -42,14 +51,14 @@ class GitHubRepositoryAnalyzer:
     
     def contributors(self, repository_data):
         contributors_url = repository_data.get('contributors_url')
-        response = requests.get(contributors_url)
+        response = requests.get(contributors_url, headers=self.headers)
 
         if response.status_code == 200:
             contributors_data = response.json()
             num_contributors = len(contributors_data)
             total_contributions = sum(contributor.get('contributions', 0) for contributor in contributors_data)
-           
-            return int(max(0, round(math.log(total_contributions, 10) / 2.0))),num_contributors , total_contributions
+            contributors_log = int(max(0, round(math.log(total_contributions, 10) / 2.0)))
+            return contributors_log, num_contributors , total_contributions
         else:
             print(f"Не удалось получить информацию о контрибьюторах. Статус код: {response.status_code}")
             return 0
@@ -59,18 +68,18 @@ class GitHubRepositoryAnalyzer:
     
     def readme_present(self):
         url = f"https://api.github.com/repos/{self.owner}/{self.repo}/readme"
-        response = requests.get(url)
+        response = requests.get(url, headers=self.headers)
         return int(response.status_code == 200)
     
     def has_multiple_versions(self):
         url = f"https://api.github.com/repos/{self.owner}/{self.repo}/releases"
-        response = requests.get(url)
+        response = requests.get(url, headers=self.headers)
         releases = response.json()
         return int(len(releases) > 1)
     
     def has_one_point_oh_version(self):
         url = f"https://api.github.com/repos/{self.owner}/{self.repo}/releases/latest"
-        response = requests.get(url)
+        response = requests.get(url, headers=self.headers)
         latest_release = response.json()
         
         tag_name = latest_release.get("tag_name", "")
@@ -78,7 +87,7 @@ class GitHubRepositoryAnalyzer:
     
     def recent_release_last_six_months(self):
         url = f"https://api.github.com/repos/{self.owner}/{self.repo}/releases/latest"
-        response = requests.get(url)
+        response = requests.get(url, headers=self.headers)
         
         if response.status_code == 200:
             latest_release = response.json()
@@ -103,7 +112,7 @@ class GitHubRepositoryAnalyzer:
     
     def test_folders_exist(self):
         url = f"https://api.github.com/repos/{self.owner}/{self.repo}/contents"
-        response = requests.get(url)
+        response = requests.get(url, headers=self.headers)
         
         if response.status_code == 200:
             contents = response.json()
@@ -122,7 +131,7 @@ class GitHubRepositoryAnalyzer:
     
     def tutorial_folders_exist(self):
         url = f"https://api.github.com/repos/{self.owner}/{self.repo}/contents"
-        response = requests.get(url)
+        response = requests.get(url, headers=self.headers)
         
         if response.status_code == 200:
             contents = response.json()
@@ -139,7 +148,7 @@ class GitHubRepositoryAnalyzer:
     
     def community_score(self):
         url = f"https://api.github.com/repos/{self.owner}/{self.repo}/community/profile"
-        response = requests.get(url)
+        response = requests.get(url, headers=self.headers)
         if response.status_code == 200:
             repository_data = response.json()
             score = 0
@@ -164,7 +173,7 @@ class GitHubRepositoryAnalyzer:
         
     def code_value(self):
         url = f"https://api.github.com/repos/{self.owner}/{self.repo}/zipball"
-        response = requests.get(url)
+        response = requests.get(url, headers=self.headers)
 
         with zipfile.ZipFile(BytesIO(response.content)) as z:
             z.extractall(f"{self.repo}_repo")
@@ -186,18 +195,19 @@ class GitHubRepositoryAnalyzer:
 
     def analyze_repository(self):
         url = f"https://api.github.com/repos/{self.owner}/{self.repo}"
-        response = requests.get(url)
+        response = requests.get(url, headers=self.headers)
         repository_data = response.json()
         
         score_contr, num_contributors , total_contributions = self.contributors(repository_data)
         score_not_br_new, created_date= self.not_brand_new(repository_data)
         score_pushed, last_pushed_date= self.recently_pushed_last_six_months(repository_data)
-        
+        stars = self.stars_clear(repository_data)
+
         results = {
             "Basic Info Present": self.basic_info_present(repository_data),
             "License Present": self.license_present(repository_data),
             "Not Brand New": score_not_br_new,
-            "Stars": self.stars(repository_data),
+            "Stars Log": self.stars(repository_data),
             "Contributors": score_contr,
             "Readme Present": self.readme_present(),
             "Has Multiple Versions": self.has_multiple_versions(),
@@ -214,5 +224,5 @@ class GitHubRepositoryAnalyzer:
         total_score_sourcerank = sum(value for key, value in results.items() if key not in ["Test Folder", "Tutorials Folder", "Community Score"])
         total_score = sum(results.values())
         
-        return results, total_score, total_score_sourcerank, py_files_count, total_lines_count, num_contributors , total_contributions, created_date, last_pushed_date
+        return results, total_score, total_score_sourcerank, stars, py_files_count, total_lines_count, num_contributors , total_contributions, created_date, last_pushed_date
 
