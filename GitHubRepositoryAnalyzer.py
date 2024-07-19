@@ -41,6 +41,16 @@ class GitHubRepositoryAnalyzer:
     def stars_clear(self, repository_data):
         return repository_data.get('stargazers_count', 0)
 
+    def forks_count(self, repository_data):
+        return repository_data.get('forks_count', 0)
+
+    def issues_count(self, repository_data):
+        return repository_data.get('open_issues', 0)
+
+    def size(self, repository_data):
+        return repository_data.get('size', 0)
+        
+
 
     def stars(self, repository_data):
         stargazers_count = repository_data.get('stargazers_count', 0)
@@ -202,6 +212,9 @@ class GitHubRepositoryAnalyzer:
         score_not_br_new, created_date= self.not_brand_new(repository_data)
         score_pushed, last_pushed_date= self.recently_pushed_last_six_months(repository_data)
         stars = self.stars_clear(repository_data)
+        issues=self.issues_count(repository_data)
+        forks = self.forks_count(repository_data)
+        size = self.size(repository_data)
 
         results = {
             "Basic Info Present": self.basic_info_present(repository_data),
@@ -224,5 +237,5 @@ class GitHubRepositoryAnalyzer:
         total_score_sourcerank = sum(value for key, value in results.items() if key not in ["Test Folder", "Tutorials Folder", "Community Score"])
         total_score = sum(results.values())
         
-        return results, total_score, total_score_sourcerank, stars, py_files_count, total_lines_count, num_contributors , total_contributions, created_date, last_pushed_date
+        return results, total_score, total_score_sourcerank, stars, py_files_count, total_lines_count, num_contributors , total_contributions, created_date, last_pushed_date, issues, forks, size
 
